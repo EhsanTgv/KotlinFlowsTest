@@ -4,8 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
@@ -25,9 +24,20 @@ class MainViewModel : ViewModel() {
     }
 
     private fun collectFlow() {
+        val flow1 = flow {
+            emit(1)
+            delay(500L)
+            emit(2)
+        }
         viewModelScope.launch {
-            countDownFlow.collect { time ->
-                Log.i("TAG", "collectFlow: The current time is $time")
+            flow1.flatMapConcat { value ->
+                flow {
+                    emit(value + 1)
+                    delay(500L)
+                    emit(value + 2)
+                }
+            }.collect { value ->
+                println("The value is $value")
             }
         }
     }
